@@ -23,6 +23,7 @@ func Verify(g1 *e.G1, g2 *e.G2, h *e.G1, u *e.G1, v *e.G1, w *e.G2, M string, si
 }
 
 func computeR1(S_alpha *e.Scalar, u *e.G1, C e.Scalar, T1 *e.G1) *e.G1 {
+    // TODO: check if we can reuse in verify and sign
     R1 := new(e.G1)
     R1.ScalarMult(S_alpha, u)
     minus_c := new(e.Scalar)
@@ -48,34 +49,36 @@ func computeR2(S_beta *e.Scalar, v *e.G1, C e.Scalar, T2 *e.G1) *e.G1 {
 
 func computeR3(T3 *e.G1, g1 *e.G1, g2 *e.G2, S_x *e.Scalar, h *e.G1, w *e.G2, S_alpha, S_beta, S_delta1, S_delta2 *e.Scalar, C e.Scalar) *e.Gt {
     R3 := new(e.Gt)
-    pair_1 := e.Pair(T3, g2)
-    pair_1_exp := new(e.Gt)
-    pair_1_exp.Exp(pair_1, S_x)
-    pair_2 := e.Pair(h, w)
-    pair_2_exp := new(e.Gt)
-    exp_2 := new(e.Scalar)
-    exp_2.Add(S_alpha, S_beta)
-    neg_exp_2 := new(e.Scalar)
-    neg_exp_2.Set(exp_2)
-    neg_exp_2.Neg()
-    pair_2_exp.Exp(pair_2, neg_exp_2)
-    pair_3 := e.Pair(h, g2)
-    pair_3_exp := new(e.Gt)
-    exp_3 := new(e.Scalar)
-    exp_3.Add(S_delta1, S_delta2)
-    neg_exp_3 := new(e.Scalar)
-    neg_exp_3.Set(exp_3)
-    neg_exp_3.Neg()
-    pair_3_exp.Exp(pair_3, neg_exp_3)
-    pair_4 := e.Pair(g1, g2)
-    pair_4_exp := new(e.Gt)
+
+    T3_s_x := new(e.G1)
+    T3_s_x.ScalarMult(S_x, T3)
+    pair_1_exp := e.Pair(T3_s_x, g2)
+
+    h_s_alpha_beta := new(e.G1)
+    s_alpha_beta := new(e.Scalar)
+    s_alpha_beta.Add(S_alpha, S_beta)
+    s_alpha_beta.Neg()
+    h_s_alpha_beta.ScalarMult(s_alpha_beta, h)
+    pair_2_exp := e.Pair(h_s_alpha_beta, w)
+
+    h_s_delta := new(e.G1)
+    s_delta := new(e.Scalar)
+    s_delta.Add(S_delta1, S_delta2)
+    s_delta.Neg()
+    h_s_delta.ScalarMult(s_delta, h)
+    pair_3_exp := e.Pair(h_s_delta, g2)
+
+    g1_minus_c := new(e.G1)
     minus_c := new(e.Scalar)
     minus_c.Set(&C)
     minus_c.Neg()
-    pair_4_exp.Exp(pair_4, minus_c)
-    pair_5 := e.Pair(T3, w)
-    pair_5_exp := new(e.Gt)
-    pair_5_exp.Exp(pair_5, &C)
+    g1_minus_c.ScalarMult(minus_c, g1)
+    pair_4_exp := e.Pair(g1_minus_c, g2)
+
+    T3_c := new(e.G1)
+    T3_c.ScalarMult(&C, T3)
+    pair_5_exp := e.Pair(T3_c, w)
+
     R3.Mul(pair_1_exp, pair_2_exp)
     R3.Mul(R3, pair_3_exp)
     R3.Mul(R3, pair_4_exp)

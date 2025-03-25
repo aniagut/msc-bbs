@@ -76,36 +76,31 @@ func ComputeRValues(r_alpha, r_beta, r_x, r_delta1, r_delta2 e.Scalar, T1, T2, T
 
     R4 := ComputeR4(T1, u, r_x, r_delta1)
 
-    R5 := new(e.G1)
-    T2_rx := new(e.G1)
-    T2_rx.ScalarMult(&r_x, T2)
-    v_r_delta2 := new(e.G1)
-    minus_r_delta2 := r_delta2
-    minus_r_delta2.Neg()
-    v_r_delta2.ScalarMult(&minus_r_delta2, v)
-    R5.Add(T2_rx, v_r_delta2)
+    R5 := ComputeR5(T2, v, r_x, r_delta2)
+
     return R1, R2, R3, R4, R5
 }
 
 func ComputeR3(T3 *e.G1, g2 *e.G2, h *e.G1, w *e.G2, r_x, r_alpha, r_beta, r_delta1, r_delta2 e.Scalar) *e.Gt {
 	R3 := new(e.Gt) 
-    pair_1 := e.Pair(T3, g2)
-    pair_1_exp := new(e.Gt)
-    pair_1_exp.Exp(pair_1, &r_x)
 
-    pair_2 := e.Pair(h, w)
-	exp_2 := new(e.Scalar)
-    exp_2.Add(&r_alpha, &r_beta)
-    exp_2.Neg()
-    pair_2_exp := new(e.Gt)
-    pair_2_exp.Exp(pair_2, exp_2)
+    T3_r_x := new(e.G1)
+    T3_r_x.ScalarMult(&r_x, T3)
+    pair_1_exp := e.Pair(T3_r_x, g2)
 
-    pair_3 := e.Pair(h, g2)
-	exp_3 := new(e.Scalar)
-    exp_3.Add(&r_delta1, &r_delta2)
-    exp_3.Neg()
-    pair_3_exp := new(e.Gt)
-    pair_3_exp.Exp(pair_3, exp_3)
+    h_r_alpha_beta := new(e.G1)
+    r_alpha_beta := new(e.Scalar)
+    r_alpha_beta.Add(&r_alpha, &r_beta)
+    r_alpha_beta.Neg()
+    h_r_alpha_beta.ScalarMult(r_alpha_beta, h)
+    pair_2_exp := e.Pair(h_r_alpha_beta, w)
+
+    h_r_delta := new(e.G1)
+    r_delta := new(e.Scalar)
+    r_delta.Add(&r_delta1, &r_delta2)
+    r_delta.Neg()
+    h_r_delta.ScalarMult(r_delta, h)
+    pair_3_exp := e.Pair(h_r_delta, g2)
 
     R3.Mul(pair_1_exp, pair_2_exp)
     R3.Mul(R3, pair_3_exp)
