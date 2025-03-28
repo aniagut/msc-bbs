@@ -6,8 +6,18 @@ import (
 	"github.com/aniagut/msc-bbs/models"
 )
 
+// Sign generates a BBS+ signature for a given message.
+//
+// Parameters:
+//   - publicKey: The public key of the system.
+//   - userPrivateKey: The private key of the user signing the message.
+//   - M: The message to be signed.
+//
+// Returns:
+//   - models.Signature: The generated signature.
+//   - error: An error if the signing process fails.
 func Sign(publicKey models.PublicKey, userPrivateKey models.User, M string) (models.Signature, error) {
-	// Compute helper values for the signature
+	// Step 1: Generate random scalars alpha and beta
 	alpha, err := utils.RandomScalar()
     if err != nil {
         return models.Signature{}, err
@@ -16,37 +26,24 @@ func Sign(publicKey models.PublicKey, userPrivateKey models.User, M string) (mod
     if err != nil {
         return models.Signature{}, err
     }
+
+	// Step 2: Compute delta1 and delta2
 	delta1, delta2 := ComputeDeltas(alpha, beta, userPrivateKey.X)
 
-	// Compute random values r_alpha, r_beta, r_x, r_delta1, r_delta2
-	r_alpha, err := utils.RandomScalar()
+	// Step 3: Generate random scalars for R values
+    scalars, err := generateRandomScalars(5)
     if err != nil {
         return models.Signature{}, err
     }
-    r_beta, err := utils.RandomScalar()
-    if err != nil {
-        return models.Signature{}, err
-    }
-    r_x, err := utils.RandomScalar()
-    if err != nil {
-        return models.Signature{}, err
-    }
-    r_delta1, err := utils.RandomScalar()
-    if err != nil {
-        return models.Signature{}, err
-    }
-    r_delta2, err := utils.RandomScalar()
-    if err != nil {
-        return models.Signature{}, err
-    }
+    r_alpha, r_beta, r_x, r_delta1, r_delta2 := scalars[0], scalars[1], scalars[2], scalars[3], scalars[4]
 
-	// Compute T values
+	// Step 4: Compute T values
     T1, T2, T3 := ComputeTValues(alpha, beta, publicKey.H, publicKey.U, publicKey.V, userPrivateKey.A)
 
-	// Compute R values
+	// Step 5: Compute R values
     R1, R2, R3, R4, R5 := ComputeRValues(r_alpha, r_beta, r_x, r_delta1, r_delta2, T1, T2, T3, publicKey.H, publicKey.U, publicKey.V, publicKey.W, publicKey.G2)
 
-	// Compute challenge scalar c
+	// Step 6: Compute challenge scalar c
     c, err := utils.HashToScalar(
         utils.SerializeString(M),
         utils.SerializeG1(T1),
@@ -62,15 +59,25 @@ func Sign(publicKey models.PublicKey, userPrivateKey models.User, M string) (mod
         return models.Signature{}, err
     }
 
-	// Compute s values
+	// Step 7: Compute s values
 	s_alpha, s_beta, s_x, s_delta1, s_delta2 := ComputeSValues(alpha, beta, userPrivateKey.X, delta1, delta2, r_alpha, r_beta, r_x, r_delta1, r_delta2, c)
 	
-	// Signature
-	signature := models.Signature{T1, T2, T3, c, s_alpha, s_beta, s_x, s_delta1, s_delta2}
-
+	// Step 8: Construct the signature
+    signature := models.Signature{
+        T1:       T1,
+        T2:       T2,
+        T3:       T3,
+        C:        c,
+        S_alpha:  s_alpha,
+        S_beta:   s_beta,
+        S_x:      s_x,
+        S_delta1: s_delta1,
+        S_delta2: s_delta2,
+    }
 	return signature, nil
 }
 
+// ComputeDeltas computes delta1 = alpha * x_i and delta2 = beta * x_i.
 func ComputeDeltas(alpha, beta, x_i e.Scalar) (*e.Scalar, *e.Scalar) {
     delta1, delta2 := new(e.Scalar), new(e.Scalar)
     delta1.Mul(&alpha, &x_i)
@@ -78,18 +85,18 @@ func ComputeDeltas(alpha, beta, x_i e.Scalar) (*e.Scalar, *e.Scalar) {
     return delta1, delta2
 }
 
+// ComputeTValues computes the T1, T2, and T3 values for the signature.
+// T1 = u^alpha, T2 = v^beta, T3 = A_i * h^(alpha + beta).
 func ComputeTValues(alpha, beta e.Scalar, h, u, v, A_i *e.G1) (*e.G1, *e.G1, *e.G1) {
     T1 := new(e.G1)
-    T1.ScalarMult(&alpha, u)
-
-    T2 := new(e.G1)
-    T2.ScalarMult(&beta, v)
-
-    T3 := new(e.G1)
-    T3 = ComputeT3(alpha, beta, h, A_i)
-    return T1, T2, T3
+	T1.ScalarMult(&alpha, u)
+	T2 := new(e.G1)
+	T2.ScalarMult(&beta, v)
+	T3 := ComputeT3(alpha, beta, h, A_i)
+	return T1, T2, T3
 }
 
+// ComputeT3 computes T3 = A_i * h^(alpha + beta).
 func ComputeT3(alpha, beta e.Scalar, h, A_i *e.G1) *e.G1 {
 	alpha_plus_beta := new(e.Scalar)
 	alpha_plus_beta.Add(&alpha, &beta)
@@ -103,6 +110,9 @@ func ComputeT3(alpha, beta e.Scalar, h, A_i *e.G1) *e.G1 {
 	return T3
 }
 
+// ComputeRValues computes the R1, R2, R3, R4, and R5 values for the signature.
+// R1 = u^r_alpha, R2 = v^r_beta, R3 = e(T3^(r_x), g2) * e(h^-(r_alpha + r_beta), w) * e(h^-(r_delta1 + r_delta2),
+// R4 = T1^r_x * u^(-r_delta1), R5 = T2^r_x * v^(-r_delta2).
 func ComputeRValues(r_alpha, r_beta, r_x, r_delta1, r_delta2 e.Scalar, T1, T2, T3, h, u, v *e.G1, w, g2 *e.G2) (*e.G1, *e.G1, *e.Gt, *e.G1, *e.G1) {
     R1 := new(e.G1)
     R1.ScalarMult(&r_alpha, u)
@@ -119,57 +129,69 @@ func ComputeRValues(r_alpha, r_beta, r_x, r_delta1, r_delta2 e.Scalar, T1, T2, T
     return R1, R2, R3, R4, R5
 }
 
+// ComputeR3 computes R3 = e(T3^(r_x), g2) * e(h^-(r_alpha + r_beta), w) * e(h^-(r_delta1 + r_delta2), g2).
 func ComputeR3(T3 *e.G1, g2 *e.G2, h *e.G1, w *e.G2, r_x, r_alpha, r_beta, r_delta1, r_delta2 e.Scalar) *e.Gt {
-	R3 := new(e.Gt) 
-
-    T3_r_x := new(e.G1)
+	T3_r_x := new(e.G1)
     T3_r_x.ScalarMult(&r_x, T3)
     pair_1_exp := e.Pair(T3_r_x, g2)
 
-    h_r_alpha_beta := new(e.G1)
     r_alpha_beta := new(e.Scalar)
     r_alpha_beta.Add(&r_alpha, &r_beta)
     r_alpha_beta.Neg()
+	h_r_alpha_beta := new(e.G1)
     h_r_alpha_beta.ScalarMult(r_alpha_beta, h)
     pair_2_exp := e.Pair(h_r_alpha_beta, w)
 
-    h_r_delta := new(e.G1)
     r_delta := new(e.Scalar)
     r_delta.Add(&r_delta1, &r_delta2)
     r_delta.Neg()
+	h_r_delta := new(e.G1)
     h_r_delta.ScalarMult(r_delta, h)
     pair_3_exp := e.Pair(h_r_delta, g2)
 
+	R3 := new(e.Gt) 
     R3.Mul(pair_1_exp, pair_2_exp)
     R3.Mul(R3, pair_3_exp)
 
 	return R3
 }
 
+// ComputeR4 computes R4 = T1^(r_x) * u^(-r_delta1).
 func ComputeR4(T1, u *e.G1, r_x, r_delta1 e.Scalar) *e.G1 {
-	R4 := new(e.G1)
 	T1_rx := new(e.G1)
 	T1_rx.ScalarMult(&r_x, T1)
-	u_r_delta1 := new(e.G1)
+
 	minus_r_delta1 := r_delta1
 	minus_r_delta1.Neg()
+	u_r_delta1 := new(e.G1)
 	u_r_delta1.ScalarMult(&minus_r_delta1, u)
+	
+	R4 := new(e.G1)
 	R4.Add(T1_rx, u_r_delta1)
+	
 	return R4
 }
 
+// ComputeR5 computes R5 = T2^(r_x) * v^(-r_delta2).
 func ComputeR5(T2, v *e.G1, r_x, r_delta2 e.Scalar) *e.G1 {
-	R5 := new(e.G1)
 	T2_rx := new(e.G1)
 	T2_rx.ScalarMult(&r_x, T2)
-	v_r_delta2 := new(e.G1)
+
+	
 	minus_r_delta2 := r_delta2
 	minus_r_delta2.Neg()
+	v_r_delta2 := new(e.G1)
 	v_r_delta2.ScalarMult(&minus_r_delta2, v)
+	
+	R5 := new(e.G1)
 	R5.Add(T2_rx, v_r_delta2)
+	
 	return R5
 }
 
+// ComputeSValues computes the s values for the signature.
+// s_alpha = r_alpha + c * alpha, s_beta = r_beta + c * beta, s_x = r_x + c * x_i,
+// s_delta1 = r_delta1 + c * delta1, s_delta2 = r_delta2 + c * delta2.
 func ComputeSValues(alpha, beta e.Scalar, x_i e.Scalar, delta1, delta2 *e.Scalar, r_alpha, r_beta, r_x, r_delta1, r_delta2 e.Scalar, c e.Scalar) (*e.Scalar, *e.Scalar, *e.Scalar, *e.Scalar, *e.Scalar) {
 	s_alpha := new(e.Scalar)
 	s_alpha.Mul(&alpha, &c)
@@ -192,4 +214,17 @@ func ComputeSValues(alpha, beta e.Scalar, x_i e.Scalar, delta1, delta2 *e.Scalar
 	s_delta2.Add(s_delta2, &r_delta2)
 
 	return s_alpha, s_beta, s_x, s_delta1, s_delta2
+}
+
+// generateRandomScalars generates the specified number of random scalars.
+func generateRandomScalars(count int) ([]e.Scalar, error) {
+    scalars := make([]e.Scalar, count)
+    for i := 0; i < count; i++ {
+        scalar, err := utils.RandomScalar()
+        if err != nil {
+            return nil, err
+        }
+        scalars[i] = scalar
+    }
+    return scalars, nil
 }
