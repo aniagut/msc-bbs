@@ -22,7 +22,7 @@ func RandomScalar() e.Scalar {
 // randomG1Element generates a random element in G1 by has to curve method
 func RandomG1Element() e.G1 {
     var h e.G1
-    randomBytes := make([]byte, 32)
+    randomBytes := make([]byte, 48)
     _, err := rand.Read(randomBytes)
     if err != nil {
         panic("Failed to generate random input for hashing to G1")

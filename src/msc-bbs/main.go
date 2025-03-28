@@ -10,11 +10,11 @@ import (
 
 func main() {	
 	g1, g2, h, u, v, w, users, e1, e2 := keygen.KeyGen(5)
-	signature := sign.Sign(g1, g2, h, u, v, w, users[2].A, users[2].X, "Anna Maria Gut")
+	signature := sign.Sign(g1, g2, h, u, v, w, users[4].A, users[4].X, "Anna Maria Gut")
 
 	verified := verify.Verify(g1, g2, h, u, v, w, "Anna Maria Gut", signature)
 	fmt.Println("Is signature verified? ", verified)
 
-	signer := open.Open(g1, g2, h, u, v, w, e1, e2, "Anna Maria Gut", signature, users)
+	signer := open.Open(g1, g2, h, u, v, w, e1, e2, "Ana Maria Gut", signature, users)
 	fmt.Println("Signer: ", signer + 1)
 }
