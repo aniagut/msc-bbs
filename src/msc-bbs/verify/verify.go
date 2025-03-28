@@ -7,19 +7,32 @@ import (
 	"github.com/aniagut/msc-bbs/models"
 )
 
-func Verify(g1 *e.G1, g2 *e.G2, h *e.G1, u *e.G1, v *e.G1, w *e.G2, M string, signature models.Signature) bool {
+func Verify(publicKey models.PublicKey, M string, signature models.Signature) (bool, error) {
     // Compute R values
-    R1 := computeR1(signature.S_alpha, u, signature.C, signature.T1)
-    R2 := computeR2(signature.S_beta, v, signature.C, signature.T2)
-    R3 := computeR3(signature.T3, g1, g2, signature.S_x, h, w, signature.S_alpha, signature.S_beta, signature.S_delta1, signature.S_delta2, signature.C)
-    R4 := computeR4(signature.S_x, signature.T1, u, signature.S_delta1)
-    R5 := computeR5(signature.S_x, signature.T2, v, signature.S_delta2)
+    R1 := computeR1(signature.S_alpha, publicKey.U, signature.C, signature.T1)
+    R2 := computeR2(signature.S_beta, publicKey.V, signature.C, signature.T2)
+    R3 := computeR3(signature.T3, publicKey.G1, publicKey.G2, signature.S_x, publicKey.H, publicKey.W, signature.S_alpha, signature.S_beta, signature.S_delta1, signature.S_delta2, signature.C)
+    R4 := computeR4(signature.S_x, signature.T1, publicKey.U, signature.S_delta1)
+    R5 := computeR5(signature.S_x, signature.T2, publicKey.V, signature.S_delta2)
 
     // Compute c
-    c := utils.HashToScalar(utils.SerializeString(M), utils.SerializeG1(signature.T1), utils.SerializeG1(signature.T2), utils.SerializeG1(signature.T3), utils.SerializeG1(R1), utils.SerializeG1(R2), utils.SerializeGt(R3), utils.SerializeG1(R4), utils.SerializeG1(R5))
+    c, err := utils.HashToScalar(
+        utils.SerializeString(M),
+        utils.SerializeG1(signature.T1),
+        utils.SerializeG1(signature.T2),
+        utils.SerializeG1(signature.T3),
+        utils.SerializeG1(R1),
+        utils.SerializeG1(R2),
+        utils.SerializeGt(R3),
+        utils.SerializeG1(R4),
+        utils.SerializeG1(R5),
+    )
+    if err != nil {
+        return false, fmt.Errorf("failed to compute hash to scalar: %w", err)
+    }
 
     // Verify
-    return verifySignature(c, signature.C)
+    return verifySignature(c, signature.C), nil
 }
 
 func computeR1(S_alpha *e.Scalar, u *e.G1, C e.Scalar, T1 *e.G1) *e.G1 {

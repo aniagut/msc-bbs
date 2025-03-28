@@ -6,31 +6,69 @@ import (
 	"github.com/aniagut/msc-bbs/models"
 )
 
-func Sign(g1 *e.G1, g2 *e.G2, h *e.G1, u *e.G1, v *e.G1, w *e.G2, A_i *e.G1, x_i e.Scalar, M string) models.Signature {
+func Sign(publicKey models.PublicKey, userPrivateKey models.User, M string) (models.Signature, error) {
 	// Compute helper values for the signature
-	alpha, beta := utils.RandomScalar(), utils.RandomScalar()
-	delta1, delta2 := ComputeDeltas(alpha, beta, x_i)
+	alpha, err := utils.RandomScalar()
+    if err != nil {
+        return models.Signature{}, err
+    }
+    beta, err := utils.RandomScalar()
+    if err != nil {
+        return models.Signature{}, err
+    }
+	delta1, delta2 := ComputeDeltas(alpha, beta, userPrivateKey.X)
 
 	// Compute random values r_alpha, r_beta, r_x, r_delta1, r_delta2
-	r_alpha, r_beta := utils.RandomScalar(), utils.RandomScalar()
-	r_x := utils.RandomScalar()
-	r_delta1, r_delta2 := utils.RandomScalar(), utils.RandomScalar()
+	r_alpha, err := utils.RandomScalar()
+    if err != nil {
+        return models.Signature{}, err
+    }
+    r_beta, err := utils.RandomScalar()
+    if err != nil {
+        return models.Signature{}, err
+    }
+    r_x, err := utils.RandomScalar()
+    if err != nil {
+        return models.Signature{}, err
+    }
+    r_delta1, err := utils.RandomScalar()
+    if err != nil {
+        return models.Signature{}, err
+    }
+    r_delta2, err := utils.RandomScalar()
+    if err != nil {
+        return models.Signature{}, err
+    }
 
 	// Compute T values
-    T1, T2, T3 := ComputeTValues(alpha, beta, h, u, v, A_i)
+    T1, T2, T3 := ComputeTValues(alpha, beta, publicKey.H, publicKey.U, publicKey.V, userPrivateKey.A)
 
 	// Compute R values
-    R1, R2, R3, R4, R5 := ComputeRValues(r_alpha, r_beta, r_x, r_delta1, r_delta2, T1, T2, T3, h, u, v, w, g2)
+    R1, R2, R3, R4, R5 := ComputeRValues(r_alpha, r_beta, r_x, r_delta1, r_delta2, T1, T2, T3, publicKey.H, publicKey.U, publicKey.V, publicKey.W, publicKey.G2)
 
-	c:= utils.HashToScalar(utils.SerializeString(M), utils.SerializeG1(T1), utils.SerializeG1(T2), utils.SerializeG1(T3), utils.SerializeG1(R1), utils.SerializeG1(R2), utils.SerializeGt(R3), utils.SerializeG1(R4), utils.SerializeG1(R5))
+	// Compute challenge scalar c
+    c, err := utils.HashToScalar(
+        utils.SerializeString(M),
+        utils.SerializeG1(T1),
+        utils.SerializeG1(T2),
+        utils.SerializeG1(T3),
+        utils.SerializeG1(R1),
+        utils.SerializeG1(R2),
+        utils.SerializeGt(R3),
+        utils.SerializeG1(R4),
+        utils.SerializeG1(R5),
+    )
+    if err != nil {
+        return models.Signature{}, err
+    }
 
 	// Compute s values
-	s_alpha, s_beta, s_x, s_delta1, s_delta2 := ComputeSValues(alpha, beta, x_i, delta1, delta2, r_alpha, r_beta, r_x, r_delta1, r_delta2, c)
+	s_alpha, s_beta, s_x, s_delta1, s_delta2 := ComputeSValues(alpha, beta, userPrivateKey.X, delta1, delta2, r_alpha, r_beta, r_x, r_delta1, r_delta2, c)
 	
 	// Signature
 	signature := models.Signature{T1, T2, T3, c, s_alpha, s_beta, s_x, s_delta1, s_delta2}
 
-	return signature
+	return signature, nil
 }
 
 func ComputeDeltas(alpha, beta, x_i e.Scalar) (*e.Scalar, *e.Scalar) {
