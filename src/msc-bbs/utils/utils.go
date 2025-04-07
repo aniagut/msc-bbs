@@ -5,10 +5,11 @@ import (
     "math/big"
 	"crypto/sha256"
     "errors"
+
     e "github.com/cloudflare/circl/ecc/bls12381"
 )
 
-// randomScalar generates a random scalar in Zp*
+// RandomScalar generates a random scalar in Z_p* (the field of scalars modulo the curve order).
 func RandomScalar() (e.Scalar, error) {
     order := OrderAsBigInt()
     bigIntScalar, err := rand.Int(rand.Reader, order)
@@ -19,12 +20,14 @@ func RandomScalar() (e.Scalar, error) {
     if bigIntScalar.Sign() == 0 { // Ensure it's nonzero
         return RandomScalar()
     }
+
+    // Convert to a scalar
     var scalar e.Scalar
     scalar.SetBytes(bigIntScalar.Bytes())
     return scalar, nil
 }
 
-// randomG1Element generates a random element in G1 by has to curve method
+// RandomG1Element generates a random element in the elliptic curve group G1.
 func RandomG1Element() (e.G1, error) {
     var h e.G1
     randomBytes := make([]byte, 48)
@@ -32,18 +35,22 @@ func RandomG1Element() (e.G1, error) {
     if err != nil {
         return e.G1{}, errors.New("failed to generate random input for hashing to G1")
     }
-    
+
+    // Hash the random bytes to the curve using a domain separation tag
     h.Hash(randomBytes, []byte("domain-separation-tag"))
     return h, nil
 }
 
-// OrderAsBigInt returns the order of the curve as a big.Int
+// OrderAsBigInt returns the order of the elliptic curve as a big.Int.
 func OrderAsBigInt() *big.Int {
     return new(big.Int).SetBytes(e.Order())
 }
 
+// HashToScalar hashes a series of byte slices into a scalar in Z_p*.
 func HashToScalar(inputs ...[]byte) (e.Scalar, error) {
     hash := sha256.New()
+
+    // Write each input to the hash
     for _, input := range inputs {
         _, err := hash.Write(input)
         if err != nil {

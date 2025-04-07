@@ -17,7 +17,7 @@ func main() {
 	}
 
 	publicKey, users, secretManagerKey := result.PublicKey, result.Users, result.SecretManagerKey
-	signature, err := sign.Sign(publicKey, users[2], "Anna Maria Gut")
+	signature, err := sign.Sign(publicKey, users[3], "Anna Maria Gut")
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return

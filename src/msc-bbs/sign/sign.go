@@ -6,7 +6,7 @@ import (
 	"github.com/aniagut/msc-bbs/models"
 )
 
-// Sign generates a BBS+ signature for a given message.
+// Sign generates a BBS signature for a given message.
 //
 // Parameters:
 //   - publicKey: The public key of the system.
