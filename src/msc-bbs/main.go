@@ -9,12 +9,33 @@ import (
 )
 
 func main() {	
-	g1, g2, h, u, v, w, users, e1, e2 := keygen.KeyGen(5)
-	signature := sign.Sign(g1, g2, h, u, v, w, users[4].A, users[4].X, "Anna Maria Gut")
+	result, err := keygen.KeyGen(5)
 
-	verified := verify.Verify(g1, g2, h, u, v, w, "Anna Maria Gut", signature)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+
+	publicKey, users, secretManagerKey := result.PublicKey, result.Users, result.SecretManagerKey
+	signature, err := sign.Sign(publicKey, users[3], "Anna Maria Gut")
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+
+	verified, err := verify.Verify(publicKey, "Anna Maria Gut", signature)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+
 	fmt.Println("Is signature verified? ", verified)
 
-	signer := open.Open(g1, g2, h, u, v, w, e1, e2, "Ana Maria Gut", signature, users)
+	signer, err := open.Open(publicKey, secretManagerKey, "Anna Maria Gut", signature, users)
+	if err != nil {
+		fmt.Println("Error: ", err)
+		return
+	}
+
 	fmt.Println("Signer: ", signer + 1)
 }

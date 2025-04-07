@@ -4,43 +4,58 @@ import (
     "crypto/rand"
     "math/big"
 	"crypto/sha256"
+    "errors"
+
     e "github.com/cloudflare/circl/ecc/bls12381"
 )
 
-// randomScalar generates a random scalar in Zp*
-func RandomScalar() e.Scalar {
+// RandomScalar generates a random scalar in Z_p* (the field of scalars modulo the curve order).
+func RandomScalar() (e.Scalar, error) {
     order := OrderAsBigInt()
-    bigIntScalar, _ := rand.Int(rand.Reader, order)
+    bigIntScalar, err := rand.Int(rand.Reader, order)
+    if err != nil {
+        return e.Scalar{}, errors.New("failed to generate random scalar")
+    }
+
     if bigIntScalar.Sign() == 0 { // Ensure it's nonzero
         return RandomScalar()
     }
+
+    // Convert to a scalar
     var scalar e.Scalar
     scalar.SetBytes(bigIntScalar.Bytes())
-    return scalar
+    return scalar, nil
 }
 
-// randomG1Element generates a random element in G1 by has to curve method
-func RandomG1Element() e.G1 {
+// RandomG1Element generates a random element in the elliptic curve group G1.
+func RandomG1Element() (e.G1, error) {
     var h e.G1
     randomBytes := make([]byte, 48)
     _, err := rand.Read(randomBytes)
     if err != nil {
-        panic("Failed to generate random input for hashing to G1")
+        return e.G1{}, errors.New("failed to generate random input for hashing to G1")
     }
-    
+
+    // Hash the random bytes to the curve using a domain separation tag
     h.Hash(randomBytes, []byte("domain-separation-tag"))
-    return h
+    return h, nil
 }
 
-// OrderAsBigInt returns the order of the curve as a big.Int
+// OrderAsBigInt returns the order of the elliptic curve as a big.Int.
 func OrderAsBigInt() *big.Int {
     return new(big.Int).SetBytes(e.Order())
 }
 
-func HashToScalar(inputs ...[]byte) e.Scalar {
+// HashToScalar hashes a series of byte slices into a scalar in Z_p*.
+func HashToScalar(inputs ...[]byte) (e.Scalar, error) {
     hash := sha256.New()
+
+    // Write each input to the hash
     for _, input := range inputs {
-        hash.Write(input)
+        _, err := hash.Write(input)
+        if err != nil {
+            return e.Scalar{}, errors.New("failed to hash input")
+        }
     }
     digest := hash.Sum(nil)
 
@@ -51,7 +66,7 @@ func HashToScalar(inputs ...[]byte) e.Scalar {
     bigIntScalar.Mod(bigIntScalar, order) // Ensure it is in Z_p
     scalar.SetBytes(bigIntScalar.Bytes())
     
-    return scalar
+    return scalar, nil
 }
 
 // Serialize G1 element to bytes
