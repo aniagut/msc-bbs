@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/aniagut/msc-bbs-plus-plus/models"
 	"github.com/aniagut/msc-bbs-plus-plus/utils"
-	"fmt"
 	e "github.com/cloudflare/circl/ecc/bls12381"
 )
 
@@ -40,8 +39,6 @@ func Sign(publicParams models.PublicParameters, signingKey models.SigningKey, M 
 			break
 		}
 	}
-
-	fmt.Println("Random scalar e:", elem)
 
 	// Step 3: Compute signature component A <- C^{1 / (x + e)} ∈ G_1
 	A := computeA(signingKey.X, elem, C)

@@ -1,7 +1,6 @@
 package verify
 
 import (
-	"fmt"
 	e "github.com/cloudflare/circl/ecc/bls12381"
 	"github.com/aniagut/msc-bbs-plus-plus/models"
 	"github.com/aniagut/msc-bbs-plus-plus/utils"
@@ -34,10 +33,8 @@ func Verify(publicParams models.PublicParameters, verificationKey models.Verific
 
 	e1 := new(e.Gt)
 	e1 = e.Pair(signature.A, g_2_e)
-	fmt.Println("e1:", e1)
 	e2 := new(e.Gt)
 	e2 = e.Pair(C, publicParams.G2)
-	fmt.Println("e2:", e2)
 	if e1.IsEqual(e2) == false {
 		return false, nil
 	}
