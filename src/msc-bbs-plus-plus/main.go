@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// Measure the time taken for KeyGen function
-	experiments.MeasureSignTimeByMessageVectorLength()
+	experiments.MeasureVerifyTimeByMessageVectorLength()
 	
 	// Example usage of KeyGen
 	// l := 5 // Length of the messages vector
