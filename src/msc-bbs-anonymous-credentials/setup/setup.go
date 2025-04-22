@@ -1,0 +1,45 @@
+package setup
+
+import (
+	"github.com/aniagut/msc-bbs-anonymous-credentials/models"
+	"github.com/aniagut/msc-bbs-anonymous-credentials/utils"
+	e "github.com/cloudflare/circl/ecc/bls12381"
+)
+	
+
+func Setup(l int) (models.SetupResult, error) {
+	// 1. Select Generators g1 ∈ G1 and g2 ∈ G2
+	g1 := e.G1Generator()
+	g2 := e.G2Generator()
+
+	// 2. Select random h_1[1..l] ← independent generators of G1
+	h1, err:= utils.GenerateLRandomG1Elements(l)
+	if err != nil {
+		return models.SetupResult{}, err
+	}
+
+	// 3. Select random x ∈ Zp*
+	x, err := utils.RandomScalar()
+	if err != nil {
+		return models.SetupResult{}, err
+	}
+
+	// 4. Compute verification key vk = X₂ ← g₂^x
+	X2 := new(e.G2)
+	X2.ScalarMult(&x, g2)
+
+	// Return the result
+	return models.SetupResult{
+		PublicParameters: models.PublicParameters{
+			G1: g1,
+			G2: g2,
+			H1: h1,
+		},
+		PublicKey: models.PublicKey{
+			X2: X2,
+		},
+		SecretKey: models.SecretKey{
+			X: &x,
+		},
+	}, nil
+}
