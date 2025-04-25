@@ -47,3 +47,20 @@ type Signature struct {
 	A *e.G1
 	E *e.Scalar
 }
+
+// SignatureProof represents the proof of a BBS++ signature.
+// It contains the following elements:
+// - A_prim: The first component of the proof
+// - B_prim: The second component of the proof
+// - ch: The challenge scalar derived from the hash of the message and commitments.
+// - z_r: The response value for the random scalar.
+// - z_i: A list of response values for the attributes.
+// - z_e: The response value for the random scalar used in the signing process.
+type SignatureProof struct {
+	A_prim *e.G1
+	B_prim *e.G1
+	Ch *e.Scalar
+	Z_r *e.Scalar
+	Z_i []e.Scalar
+	Z_e *e.Scalar
+}

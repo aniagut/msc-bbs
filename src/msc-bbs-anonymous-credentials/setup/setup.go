@@ -6,7 +6,17 @@ import (
 	e "github.com/cloudflare/circl/ecc/bls12381"
 )
 	
-
+// Setup initializes the public parameters and keys for the BBS++ system.
+// It generates the generators g1 and g2, independent generators h_1[1..l], and the secret key x.
+// The function returns the public parameters, public key, and secret key.
+//
+// Parameters:
+//   - l: The number of independent generators to be generated.
+//
+// Returns:
+//   - models.SetupResult: The result containing public parameters, public key, and secret key.
+//   - error: An error if the setup process fails.
+//
 func Setup(l int) (models.SetupResult, error) {
 	// 1. Select Generators g1 ∈ G1 and g2 ∈ G2
 	g1 := e.G1Generator()

@@ -5,6 +5,8 @@ import (
 	"log"
 	"github.com/aniagut/msc-bbs-anonymous-credentials/setup"
 	"github.com/aniagut/msc-bbs-anonymous-credentials/issue"
+	"github.com/aniagut/msc-bbs-anonymous-credentials/presentation"
+	"github.com/aniagut/msc-bbs-anonymous-credentials/verify"
 )
 
 func main() {
@@ -28,4 +30,23 @@ func main() {
 	}
 	fmt.Printf("Credential issued successfully!\n")
 	fmt.Printf("Signature: %+v\n", signature)
+
+	// Example usage of the presentation function
+	revealed := []int{0, 1} // Indices of revealed attributes
+	nonce := []byte("random_nonce") // Random nonce
+	proof, err := presentation.Presentation(attributes, signature, revealed, result.PublicParameters, nonce)
+	if err != nil {
+		log.Fatalf("Error during presentation: %v", err)
+	}
+	fmt.Printf("Presentation completed successfully!\n")
+	fmt.Printf("Proof: %+v\n", proof)
+
+	// Example usage of the verify function
+	revealedAttributes := []string{"attribute1", "attribute2"}
+	isValid, err := verify.Verify(proof, nonce, revealedAttributes, revealed, result.PublicParameters, result.PublicKey)
+	if err != nil {
+		log.Fatalf("Error during verification: %v", err)
+	}
+	fmt.Printf("Verification completed successfully!\n")
+	fmt.Printf("Is the proof valid? %v\n", isValid)
 }

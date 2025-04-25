@@ -1,0 +1,93 @@
+package verify
+
+import (
+	e "github.com/cloudflare/circl/ecc/bls12381"
+	"github.com/aniagut/msc-bbs-anonymous-credentials/models"
+	"github.com/aniagut/msc-bbs-anonymous-credentials/utils"
+	"log"
+	"errors"
+)
+
+// Verify checks the validity of ZKP proof for a signature (ensures the credental was signed by the issuer) and binds the revealed attributes to the proof
+func Verify(ZKPProof models.SignatureProof, nonce []byte, revealedAttributes []string, revealedIndices []int, publicParams models.PublicParameters, publicKey models.PublicKey) (bool, error) {
+	// Step 1: Compute the h values h₁[i] ← g1^m[i] for revealed and hidden attributes a[i]
+	revealedH, hiddenH, err := utils.ComputeRevealedAndHiddenH(publicParams.H1, revealedIndices)
+	if err != nil {
+		log.Printf("Error computing revealed and hidden h values: %v", err)
+		return false, err
+	}
+	// Step 2: Compute ∏_j h₁[j]^z_j for j ∈ hidden
+	// where z_j is the j-th revealed hidden.
+	hiddenH1Exp, err := utils.ComputeH1Exp(hiddenH, ZKPProof.Z_i)
+	if err != nil {
+		log.Printf("Error computing hidden h1 exponent: %v", err)
+		return false, err
+	}
+
+	// Step 3: Compute the commitment for revealed attributes C_rev ← g1 * ∏_i h₁[i]^a[i]
+	C_rev, err := utils.ComputeCommitment(revealedAttributes, revealedH, publicParams.G1)
+	if err != nil {
+		log.Printf("Error computing commitment: %v", err)
+		return false, err
+	}
+
+	// Step 4: Recompute U ← C_rev^z_r * ∏_j h₁[j]^z_j * A_prim^z_e * B^(-ch) for j ∈ hidden
+	C_rev_exp := new(e.G1)
+	C_rev_exp.ScalarMult(ZKPProof.Z_r, C_rev)
+	A_prim_exp := new(e.G1)
+	A_prim_exp.ScalarMult(ZKPProof.Z_e, ZKPProof.A_prim)
+	neg_ch := new(e.Scalar)
+	*neg_ch = *ZKPProof.Ch
+	neg_ch.Neg()
+	B_exp := new(e.G1)
+	B_exp.ScalarMult(neg_ch, ZKPProof.B_prim)
+	U := new(e.G1)
+	U.Add(C_rev_exp, hiddenH1Exp)
+	U.Add(U, A_prim_exp)
+	U.Add(U, B_exp)
+
+	// Step 5: Recompute the challenge scalar ch ← H(nonce, U, A_prim, B_prim, {a_j}) for j ∈ revealed
+	ch, err := utils.HashToScalar(
+		nonce,
+		utils.SerializeG1(U),
+		utils.SerializeG1(ZKPProof.A_prim),
+		utils.SerializeG1(ZKPProof.B_prim),
+		utils.SerializeListStrings(revealedAttributes),
+	)
+	if err != nil {
+		log.Printf("Error computing hash to scalar: %v", err)
+		return false, err
+	}
+
+	// Step 6: Verify that the recomputed challenge ch matches the signature's challenge
+	if ch.IsEqual(ZKPProof.Ch) != 1 {
+		log.Printf("Challenge mismatch: expected %v, got %v", ZKPProof.Ch, ch)
+		return false, errors.New("challenge mismatch")
+	}
+
+	// Step 7: Verify the credential
+	// Check if e(A_prim, publicKey.X2) == e(B_prim, g2)
+	if !PairingCheck(ZKPProof.A_prim, publicKey.X2, ZKPProof.B_prim, publicParams.G2) {
+		log.Printf("Pairing check failed: e(A_prim, publicKey.X2) != e(B_prim, publicKey.G2)")
+		return false, errors.New("pairing check failed")
+	}
+	
+	// Step 8: Credentials are valid, return true
+	log.Printf("Credential verification successful")
+	return true, nil
+}
+
+// PairingCheck performs the pairing check for the given inputs.
+func PairingCheck(A_prim *e.G1, X2 *e.G2, B_prim *e.G1, G2 *e.G2) bool {
+	// Compute the pairing e(A_prim, X2)
+	pairing1 := e.Pair(A_prim, X2)
+
+	// Compute the pairing e(B_prim, G2)
+	pairing2 := e.Pair(B_prim, G2)
+
+	// Check if the pairings are equal
+	if pairing1.IsEqual(pairing2) == false {
+		return false
+	}
+	return true
+}
