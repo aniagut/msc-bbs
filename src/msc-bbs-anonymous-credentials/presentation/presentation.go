@@ -25,7 +25,7 @@ func Presentation(attributes []string, credential models.Signature, revealed []i
 	// Step 1: Compute the revealed and hidden attributes
 	revealedAttributes, hiddenAttributes, err := ComputeRevealedAndHiddenAttributes(attributes, revealed)
 	if err != nil {
-		log.Printf("Error computing revealed attributes: %v", err)
+		log.Printf("Error computing revealed and hidden attributes: %v", err)
 		return models.SignatureProof{}, err
 	}
 
@@ -44,7 +44,7 @@ func Presentation(attributes []string, credential models.Signature, revealed []i
 		return models.SignatureProof{}, err
 	}
 
-	// Step 4: Select random r ← Z_p* and ensure
+	// Step 4: Select random r ← Z_p*
 	r, err := utils.RandomScalar()
 	if err != nil {
 		log.Printf("Error generating random scalar r: %v", err)
@@ -55,30 +55,17 @@ func Presentation(attributes []string, credential models.Signature, revealed []i
 	A_prim := new(e.G1)
 	A_prim.ScalarMult(&r, credential.A)
 
-	// Step 6: Compute the signature component B_prim ← C_rev^r * ∏_i h₁[i]^a[i] * A_prim^(-e) for i ∈ hidden
-	C_rev_exp := new(e.G1)
-	C_rev_exp.ScalarMult(&r, C_rev)
-	
-	// Convert hidden attributes to scalars
-	hiddenHScalars := make([]e.Scalar, len(hiddenAttributes))
-	for i := 0; i < len(hiddenAttributes); i++ {
-		hiddenHScalars[i].SetBytes(utils.SerializeString(hiddenAttributes[i]))
-	}
-	h1ExpHidden , err:= utils.ComputeH1Exp(hiddenH, hiddenHScalars)
-	if err != nil {
-		log.Printf("Error computing hidden h1 exponent: %v", err)
-		return models.SignatureProof{}, err
-	}
-
-	e_inv := new(e.Scalar)
-	e_inv.Inv(credential.E)
-
+	// Step 6: Compute the signature component B_prim = C^r * A^(-re)
+	C, err := utils.ComputeCommitment(attributes, publicParams.H1, publicParams.G1)
+	C_exp := new(e.G1)
+	C_exp.ScalarMult(&r, C)
+	e_neg := new(e.Scalar)
+	*e_neg = *credential.E
+	e_neg.Neg()
 	A_prim_exp := new(e.G1)
-	A_prim_exp.ScalarMult(e_inv, A_prim)
-
+	A_prim_exp.ScalarMult(e_neg, A_prim)
 	B_prim := new(e.G1)
-	B_prim.Add(C_rev_exp, h1ExpHidden)
-	B_prim.Add(B_prim, A_prim_exp)
+	B_prim.Add(C_exp, A_prim_exp)
 
 	// Step 7: Compute random scalars v_r, {v_j} for j ∈ hidden and v_e
 	v_r, err := utils.RandomScalar()
@@ -114,6 +101,8 @@ func Presentation(attributes []string, credential models.Signature, revealed []i
 	U.Add(C_rev_exp_v_r, h1Exp_v_j)
 	U.Add(U, A_prim_exp_v_e)
 
+	log.Printf("Check U: %v", U)
+
 	// Step 9: Compute the challenge ch ← H(nonce, U, A_prim, B_prim, {a_i}) for i ∈ revealed
 	ch, err := utils.ComputeChallenge(nonce, U, A_prim, B_prim, revealedAttributes)
 	if err != nil {
@@ -124,7 +113,7 @@ func Presentation(attributes []string, credential models.Signature, revealed []i
 	// Step 10: Blind v_r, {v_j} for j ∈ hidden and v_e
 	// z_r ← v_r + ch * e
 	z_r := new(e.Scalar)
-	z_r.Mul(&ch, credential.E)
+	z_r.Mul(&ch, &r)
 	z_r.Add(z_r, &v_r)
 	// z_j <- v_j + ch * r *  a_j for j ∈ hidden
 	z_j := make([]e.Scalar, len(hiddenAttributes))

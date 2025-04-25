@@ -46,14 +46,10 @@ func Verify(ZKPProof models.SignatureProof, nonce []byte, revealedAttributes []s
 	U.Add(U, A_prim_exp)
 	U.Add(U, B_exp)
 
+	log.Printf("U: %v", U)
+
 	// Step 5: Recompute the challenge scalar ch ← H(nonce, U, A_prim, B_prim, {a_j}) for j ∈ revealed
-	ch, err := utils.HashToScalar(
-		nonce,
-		utils.SerializeG1(U),
-		utils.SerializeG1(ZKPProof.A_prim),
-		utils.SerializeG1(ZKPProof.B_prim),
-		utils.SerializeListStrings(revealedAttributes),
-	)
+	ch, err := utils.ComputeChallenge(nonce, U, ZKPProof.A_prim, ZKPProof.B_prim, revealedAttributes)
 	if err != nil {
 		log.Printf("Error computing hash to scalar: %v", err)
 		return false, err
@@ -64,11 +60,15 @@ func Verify(ZKPProof models.SignatureProof, nonce []byte, revealedAttributes []s
 		log.Printf("Challenge mismatch: expected %v, got %v", ZKPProof.Ch, ch)
 		return false, errors.New("challenge mismatch")
 	}
+	log.Printf("Challenge verified successfully")
+	log.Printf("ch: %v", ch)
+	log.Printf("ZKPProof.Ch: %v", ZKPProof.Ch)
 
 	// Step 7: Verify the credential
 	// Check if e(A_prim, publicKey.X2) == e(B_prim, g2)
+
 	if !PairingCheck(ZKPProof.A_prim, publicKey.X2, ZKPProof.B_prim, publicParams.G2) {
-		log.Printf("Pairing check failed: e(A_prim, publicKey.X2) != e(B_prim, publicKey.G2)")
+		log.Printf("Pairing check failed: e(A_prim, publicKey.X2) != e(B_prim, publicParams.G2)")
 		return false, errors.New("pairing check failed")
 	}
 	
@@ -89,5 +89,6 @@ func PairingCheck(A_prim *e.G1, X2 *e.G2, B_prim *e.G1, G2 *e.G2) bool {
 	if pairing1.IsEqual(pairing2) == false {
 		return false
 	}
+	log.Printf("Pairing check passed: e(A_prim, X2) == e(B_prim, G2)")
 	return true
 }

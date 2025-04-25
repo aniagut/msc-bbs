@@ -18,9 +18,9 @@ func main() {
 	}
 
 	fmt.Printf("Setup completed successfully!\n")
-	fmt.Printf("Public Parameters: %+v\n", result.PublicParameters)
-	fmt.Printf("Public Key: %+v\n", result.PublicKey)
-	fmt.Printf("Secret Key: %+v\n", result.SecretKey)
+	// fmt.Printf("Public Parameters: %+v\n", result.PublicParameters)
+	// fmt.Printf("Public Key: %+v\n", result.PublicKey)
+	// fmt.Printf("Secret Key: %+v\n", result.SecretKey)
 
 	// Example usage of the issue function
 	attributes := []string{"attribute1", "attribute2", "attribute3", "attribute4", "attribute5"}
@@ -29,17 +29,17 @@ func main() {
 		log.Fatalf("Error during issuing credential: %v", err)
 	}
 	fmt.Printf("Credential issued successfully!\n")
-	fmt.Printf("Signature: %+v\n", signature)
+	// fmt.Printf("Signature: %+v\n", signature)
 
 	// Example usage of the presentation function
-	revealed := []int{0, 1} // Indices of revealed attributes
+	revealed := []int{0, 2} // Indices of revealed attributes
 	nonce := []byte("random_nonce") // Random nonce
 	proof, err := presentation.Presentation(attributes, signature, revealed, result.PublicParameters, nonce)
 	if err != nil {
 		log.Fatalf("Error during presentation: %v", err)
 	}
 	fmt.Printf("Presentation completed successfully!\n")
-	fmt.Printf("Proof: %+v\n", proof)
+	// fmt.Printf("Proof: %+v\n", proof)
 
 	// Example usage of the verify function
 	revealedAttributes := []string{"attribute1", "attribute2"}

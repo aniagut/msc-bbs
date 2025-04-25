@@ -101,13 +101,14 @@ func ComputeH1Exp(h1 []e.G1, v []e.Scalar) (*e.G1, error) {
 
     // Initialize the result
     result := new(e.G1)
+    result.SetIdentity()
 
     for i, val := range v {
         // Compute h1[i]^v[i]
         h1Exp := new(e.G1)
         h1Exp.ScalarMult(&val, &h1[i])
 
-        result.Add(h1Exp, &h1[i])
+        result.Add(result, h1Exp)
     }
 
     return result, nil

@@ -55,8 +55,10 @@ func Sign(publicParams models.PublicParameters, signingKey models.SecretKey, M [
 		}
 
 		// Check if x + e ≠ 0
-		elem.Add(signingKey.X, &randomScalar)
-		if elem.IsZero() == 0 {
+		check := new(e.Scalar)
+		check.Add(signingKey.X, &randomScalar)
+		if check.IsZero() == 0 {
+			elem.Set(&randomScalar)
 			break
 		}
 	}
