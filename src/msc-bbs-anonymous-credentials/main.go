@@ -32,7 +32,7 @@ func main() {
 	// fmt.Printf("Signature: %+v\n", signature)
 
 	// Example usage of the presentation function
-	revealed := []int{0, 4} // Indices of revealed attributes
+	revealed := []int{0, 2} // Indices of revealed attributes
 	nonce := []byte("random_nonce") // Random nonce
 	proof, err := presentation.Presentation(attributes, signature, revealed, result.PublicParameters, nonce)
 	if err != nil {
@@ -42,7 +42,7 @@ func main() {
 	// fmt.Printf("Proof: %+v\n", proof)
 
 	// Example usage of the verify function
-	revealedAttributes := []string{"attribute1", "attribute5"}
+	revealedAttributes := []string{"attribute1", "attribute3"}
 	isValid, err := verify.Verify(proof, nonce, revealedAttributes, revealed, result.PublicParameters, result.PublicKey)
 	if err != nil {
 		log.Fatalf("Error during verification: %v", err)

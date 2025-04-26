@@ -92,7 +92,7 @@ func ComputeCommitment(M []string, h1 []e.G1, g1 *e.G1) (*e.G1, error) {
 }
 
 // ComputeH1Exp computes the exponentiation of h1[i] by v[i] for each attribute.
-// It returns the sum of these exponentiated values.
+// It returns the sum of these exponentiations.
 func ComputeH1Exp(h1 []e.G1, v []e.Scalar) (*e.G1, error) {
     // Ensure the attributes vector length matches the length of h1
     if len(v) != len(h1) {

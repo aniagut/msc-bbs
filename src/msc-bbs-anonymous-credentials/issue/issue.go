@@ -34,14 +34,14 @@ func Issue(a []string, publicParams models.PublicParameters, secretKey models.Se
 // Parameters:
 //   - publicParams: The public key of the system.
 //   - signingKey: The key used for signing the message.
-//   - M: The message to be signed.
+//   - a: The list of attributes to be signed.
 //
 // Returns:
 //   - Signature: The generated signature.
 //   - error: An error if the signing process fails.
-func Sign(publicParams models.PublicParameters, signingKey models.SecretKey, M []string) (models.Signature, error) {
+func Sign(publicParams models.PublicParameters, signingKey models.SecretKey, a []string) (models.Signature, error) {
 	// Step 1: Compute commitment C ← g1 * ∏_i h₁[i]^m[i]
-	C, err := utils.ComputeCommitment(M, publicParams.H1, publicParams.G1)
+	C, err := utils.ComputeCommitment(a, publicParams.H1, publicParams.G1)
     if err != nil {
         return models.Signature{}, err
     }
@@ -75,6 +75,7 @@ func Sign(publicParams models.PublicParameters, signingKey models.SecretKey, M [
 
 // ComputeA computes the signature component A = C^{1 / (x + e)} ∈ G_1
 func computeA(x *e.Scalar, elem *e.Scalar, C *e.G1) *e.G1 {
+	// Compute x + e
 	x_plus_e := new(e.Scalar)
 	x_plus_e.Add(x, elem)
 

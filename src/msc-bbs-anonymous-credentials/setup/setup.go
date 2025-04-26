@@ -3,6 +3,7 @@ package setup
 import (
 	"github.com/aniagut/msc-bbs-anonymous-credentials/models"
 	"github.com/aniagut/msc-bbs-anonymous-credentials/utils"
+	"errors"
 	e "github.com/cloudflare/circl/ecc/bls12381"
 )
 	
@@ -18,6 +19,10 @@ import (
 //   - error: An error if the setup process fails.
 //
 func Setup(l int) (models.SetupResult, error) {
+	// Step 0: Validate input
+	if l <= 0 {
+		return models.SetupResult{}, errors.New("number of independent generators must be greater than 0")
+	}
 	// 1. Select Generators g1 ∈ G1 and g2 ∈ G2
 	g1 := e.G1Generator()
 	g2 := e.G2Generator()
