@@ -46,8 +46,6 @@ func Verify(ZKPProof models.SignatureProof, nonce []byte, revealedAttributes []s
 	U.Add(U, A_prim_exp)
 	U.Add(U, B_exp)
 
-	log.Printf("U: %v", U)
-
 	// Step 5: Recompute the challenge scalar ch ← H(nonce, U, A_prim, B_prim, {a_j}) for j ∈ revealed
 	ch, err := utils.ComputeChallenge(nonce, U, ZKPProof.A_prim, ZKPProof.B_prim, revealedAttributes)
 	if err != nil {
@@ -61,8 +59,6 @@ func Verify(ZKPProof models.SignatureProof, nonce []byte, revealedAttributes []s
 		return false, errors.New("challenge mismatch")
 	}
 	log.Printf("Challenge verified successfully")
-	log.Printf("ch: %v", ch)
-	log.Printf("ZKPProof.Ch: %v", ZKPProof.Ch)
 
 	// Step 7: Verify the credential
 	// Check if e(A_prim, publicKey.X2) == e(B_prim, g2)

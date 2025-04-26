@@ -101,8 +101,6 @@ func Presentation(attributes []string, credential models.Signature, revealed []i
 	U.Add(C_rev_exp_v_r, h1Exp_v_j)
 	U.Add(U, A_prim_exp_v_e)
 
-	log.Printf("Check U: %v", U)
-
 	// Step 9: Compute the challenge ch ← H(nonce, U, A_prim, B_prim, {a_i}) for i ∈ revealed
 	ch, err := utils.ComputeChallenge(nonce, U, A_prim, B_prim, revealedAttributes)
 	if err != nil {
