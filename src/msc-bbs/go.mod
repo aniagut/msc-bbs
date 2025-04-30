@@ -1,4 +1,4 @@
-module github.com/aniagut/msc-bbs
+module github.com/aniagut/msc-bbs/src/msc-bbs
 
 go 1.18
 
