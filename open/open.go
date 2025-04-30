@@ -1,3 +1,6 @@
+// Package open provides functionality to verify signatures and recover user private keys in a cryptographic system.
+// It includes functions to open a signature and identify the signer based on the public key and secret manager key.
+// It uses the BLS12-381 elliptic curve for cryptographic operations.
 package open
 
 import (

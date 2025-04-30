@@ -1,3 +1,6 @@
+// Package sign provides functions to generate BBS signatures for messages using the BLS12-381 elliptic curve.
+// It includes functions to compute the necessary parameters, generate random scalars, and create the final signature.
+// The package uses the circl library for elliptic curve operations and the utils package for random number generation and serialization.
 package sign
 
 import (

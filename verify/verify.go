@@ -1,3 +1,6 @@
+// Package verify provides functions to verify BBS signatures.
+// It includes functions to compute the necessary R values, hash the inputs to a scalar, and check the validity of the signature.
+// The package uses the BLS12-381 elliptic curve for cryptographic operations.
 package verify
 
 import (

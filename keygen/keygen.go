@@ -1,3 +1,6 @@
+// Package keygen provides functionality for generating keys for the BBS signature scheme.
+// It includes functions to generate the public key, user keys, and secret manager key.
+// The package uses the BLS12-381 elliptic curve for cryptographic operations.
 package keygen
 
 import (

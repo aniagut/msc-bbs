@@ -1,3 +1,7 @@
+// Package utils provides utility functions for cryptographic operations
+// // in the BBS signature scheme. It includes functions for generating random scalars,
+// // hashing to scalars, and serializing elements of the elliptic curve groups.
+// // The package uses the BLS12-381 elliptic curve for cryptographic operations.
 package utils
 
 import (

@@ -1,3 +1,5 @@
+// Package models provides the data structures and types used in the BBS+ signature scheme.
+// // It includes the public key, secret manager key, user keys, and the signature structure.
 package models
 
 import (
