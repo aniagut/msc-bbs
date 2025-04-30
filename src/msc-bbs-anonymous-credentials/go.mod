@@ -1,4 +1,4 @@
-module github.com/aniagut/msc-bbs/src/msc-bbs-anonymous-credentials
+module github.com/aniagut/msc-bbs-anonymous-credentials
 
 go 1.18
 
