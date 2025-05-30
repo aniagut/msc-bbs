@@ -3,6 +3,7 @@ package main
 import (
 	// "fmt"
 	"github.com/aniagut/msc-bbs/experiments"
+	// "github.com/aniagut/msc-bbs/keygen"
 	// "github.com/aniagut/msc-bbs/sign"
 	// "github.com/aniagut/msc-bbs/verify"
 	// "github.com/aniagut/msc-bbs/open"
@@ -10,7 +11,10 @@ import (
 
 
 func main() {
-	experiments.MeasureVerifyTimeByMessageLength()	
+	// Compare generating SDH tuples for different numbers of users
+	experiments.MeasurePairingTime()
+	// experiments.MeasureSDHTuplesGenerationTimeByNumberOfUsers()
+	// experiments.MeasureVerifyTimeByMessageLength()	
 	// result, err := keygen.KeyGen(5)
 
 	// if err != nil {

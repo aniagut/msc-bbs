@@ -149,6 +149,27 @@ func ComputeSDHTuples(n int, g1 *e.G1, y e.Scalar) ([]models.User, error) {
 	return users, nil
 }
 
+func OldComputeSDHTuples(n int, g1 *e.G1, y e.Scalar) ([]models.User, error) {
+	// Initialize a slice to store user data
+	users := make([]models.User, n)
+	
+	for i := 0; i < n; i++ {
+		// Select x_i ∈ Zp* (a random scalar for the user)
+		x_i, err := utils.RandomScalar()
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate random scalar x_i for user %d: %w", i, err)
+		}
+		
+		// Compute A_i = g1^(1 / (γ + x_i))
+		A_i := ComputeAi(g1, y, x_i)
+
+		// Store the tuple (A_i, x_i) in the users slice
+		users[i] = models.User{A: &A_i, X: x_i}
+	}
+
+	return users, nil
+}
+
 // ComputeAi computes A_i = g1^(1 / (γ + x_i)) for a given user.
 func ComputeAi(g1 *e.G1, y e.Scalar, x_i e.Scalar) e.G1 {
 	// Compute γ + x_i
