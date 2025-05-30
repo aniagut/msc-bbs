@@ -82,46 +82,26 @@ func computeR2(S_beta *e.Scalar, v *e.G1, C e.Scalar, T2 *e.G1) *e.G1 {
 
 // computeR3 computes R3 = e(T3, g2)^{s_x} * e(h, w)^{-s_alpha - s_beta} * e(h, g2)^{-s_delta1 - s_delta2} * (e(g1, g2) / e(T3, w))^{-c}.
 func computeR3(T3 *e.G1, g1 *e.G1, g2 *e.G2, S_x *e.Scalar, h *e.G1, w *e.G2, S_alpha, S_beta, S_delta1, S_delta2 *e.Scalar, C e.Scalar) *e.Gt {
-    R3 := new(e.Gt)
-
-    // Compute e(T3, g2)^{s_x}
-    T3_s_x := new(e.G1)
-    T3_s_x.ScalarMult(S_x, T3)
-    pair_1_exp := e.Pair(T3_s_x, g2)
-
-    // Compute e(h, w)^{-s_alpha - s_beta}
-    h_s_alpha_beta := new(e.G1)
+    // Compute (-s_alpha - s_beta)
     s_alpha_beta := new(e.Scalar)
     s_alpha_beta.Add(S_alpha, S_beta)
     s_alpha_beta.Neg()
-    h_s_alpha_beta.ScalarMult(s_alpha_beta, h)
-    pair_2_exp := e.Pair(h_s_alpha_beta, w)
 
-    // Compute e(h, g2)^{-s_delta1 - s_delta2}
-    h_s_delta := new(e.G1)
+    // Compute (-s_delta1 - s_delta2)
     s_delta := new(e.Scalar)
     s_delta.Add(S_delta1, S_delta2)
     s_delta.Neg()
-    h_s_delta.ScalarMult(s_delta, h)
-    pair_3_exp := e.Pair(h_s_delta, g2)
 
-    // Compute (e(g1, g2) / e(T3, w))^{-c}
-    g1_minus_c := new(e.G1)
+    // Compute {-c}
     minus_c := new(e.Scalar)
     minus_c.Set(&C)
     minus_c.Neg()
-    g1_minus_c.ScalarMult(minus_c, g1)
-    pair_4_exp := e.Pair(g1_minus_c, g2)
 
-    T3_c := new(e.G1)
-    T3_c.ScalarMult(&C, T3)
-    pair_5_exp := e.Pair(T3_c, w)
-
-    // Combine all pairings
-    R3.Mul(pair_1_exp, pair_2_exp)
-    R3.Mul(R3, pair_3_exp)
-    R3.Mul(R3, pair_4_exp)
-    R3.Mul(R3, pair_5_exp)
+    R3 := e.ProdPair(
+        []*e.G1{T3, h, h, g1, T3},
+        []*e.G2{g2, w, g2, g2, w},
+        []*e.Scalar{S_x, s_alpha_beta, s_delta, minus_c, &C},
+    )
     return R3
 }
 

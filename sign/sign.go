@@ -134,28 +134,20 @@ func ComputeRValues(r_alpha, r_beta, r_x, r_delta1, r_delta2 e.Scalar, T1, T2, T
 
 // ComputeR3 computes R3 = e(T3^(r_x), g2) * e(h^-(r_alpha + r_beta), w) * e(h^-(r_delta1 + r_delta2), g2).
 func ComputeR3(T3 *e.G1, g2 *e.G2, h *e.G1, w *e.G2, r_x, r_alpha, r_beta, r_delta1, r_delta2 e.Scalar) *e.Gt {
-	T3_r_x := new(e.G1)
-    T3_r_x.ScalarMult(&r_x, T3)
-    pair_1_exp := e.Pair(T3_r_x, g2)
-
-    r_alpha_beta := new(e.Scalar)
+	r_alpha_beta := new(e.Scalar)
     r_alpha_beta.Add(&r_alpha, &r_beta)
     r_alpha_beta.Neg()
-	h_r_alpha_beta := new(e.G1)
-    h_r_alpha_beta.ScalarMult(r_alpha_beta, h)
-    pair_2_exp := e.Pair(h_r_alpha_beta, w)
 
-    r_delta := new(e.Scalar)
+	r_delta := new(e.Scalar)
     r_delta.Add(&r_delta1, &r_delta2)
     r_delta.Neg()
-	h_r_delta := new(e.G1)
-    h_r_delta.ScalarMult(r_delta, h)
-    pair_3_exp := e.Pair(h_r_delta, g2)
 
-	R3 := new(e.Gt) 
-    R3.Mul(pair_1_exp, pair_2_exp)
-    R3.Mul(R3, pair_3_exp)
-
+	// func ProdPair(P []*G1, Q []*G2, n []*Scalar) *Gt
+    R3 := e.ProdPair(
+		[]*e.G1{T3, h, h},
+		[]*e.G2{g2, w, g2},
+		[]*e.Scalar{&r_x, r_alpha_beta, r_delta},
+	)
 	return R3
 }
 
