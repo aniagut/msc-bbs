@@ -108,24 +108,24 @@ func TestComputeSDHTuples(t *testing.T) {
 func TestComputeAi(t *testing.T) {
     // Define test inputs
     g1 := e.G1Generator()
-    y := e.Scalar{}
-    y.SetUint64(5) // Set scalar to 5
-    x_i := e.Scalar{}
-    x_i.SetUint64(6) // Set scalar to 6
+    gamma := e.Scalar{}
+    gamma.SetUint64(5) // Set scalar to 5
+    xI := e.Scalar{}
+    xI.SetUint64(6) // Set scalar to 6
 
     // Call the ComputeAi function
-    A_i := ComputeAi(g1, y, x_i)
+    Ai := ComputeAi(g1, gamma, xI)
 
     // Assert the result is not nil
-    assert.NotNil(t, A_i, "A_i should not be nil")
+    assert.NotNil(t, Ai, "Ai should not be nil")
 
-	// Verify that A_i = g1^(1 / (γ + x_i))
-    var yPlusX e.Scalar
-    yPlusX.Add(&y, &x_i)
-    yPlusX.Inv(&yPlusX)
+	// Verify that Ai = g1^(1 / (gamma + xI))
+    var gammaPlusX e.Scalar
+    gammaPlusX.Add(&gamma, &xI)
+    gammaPlusX.Inv(&gammaPlusX)
 
     var aCheck e.G1
-    aCheck.ScalarMult(&yPlusX, g1)
+    aCheck.ScalarMult(&gammaPlusX, g1)
 
-    assert.True(t, aCheck.IsEqual(&A_i), "A_i should equal g1^(1 / (γ + x_i))")
+    assert.True(t, aCheck.IsEqual(&Ai), "Ai should equal g1^(1 / (gamma + xI))")
 }

@@ -1,10 +1,10 @@
 package open
 
 import (
-	"math/big"
-	"crypto/rand"
+    "math/big"
+    "crypto/rand"
     "testing"
-	"fmt"
+    "fmt"
 
     e "github.com/cloudflare/circl/ecc/bls12381"
     "github.com/aniagut/msc-bbs/models"
@@ -42,9 +42,9 @@ func TestOpen(t *testing.T) {
 
     // Mock users with unique A values
     users := []models.User{
-        {A: randomG1Element()},
-        {A: randomG1Element()},
-        {A: randomG1Element()},
+        {A: RandomG1Element()},
+        {A: RandomG1Element()},
+        {A: RandomG1Element()},
     }
 
     // Set the recovered public key to match the third user
@@ -56,7 +56,7 @@ func TestOpen(t *testing.T) {
     }
 
     // Call the Open function using the wrapper
-    signerIndex, err := testableOpen(publicKey, secretManagerKey, message, signature, users, mockRecoverUserPrivateKey)
+    signerIndex, err := TestableOpen(publicKey, secretManagerKey, message, signature, users, mockRecoverUserPrivateKey)
 
     // Assert no error occurred
     assert.NoError(t, err, "Open should not return an error")
@@ -65,10 +65,10 @@ func TestOpen(t *testing.T) {
     assert.Equal(t, 2, signerIndex, "The signer index should be 2")
 }
 
-// randomG1Element generates a random G1 element for testing purposes.
-func randomG1Element() *e.G1 {
+// RandomG1Element generates a random G1 element for testing purposes.
+func RandomG1Element() *e.G1 {
     element := e.G1Generator()
-    scalar, err := randomScalar()
+    scalar, err := RandomScalar()
     if err != nil {
         panic(fmt.Sprintf("Failed to generate random scalar: %v", err))
     }
@@ -76,8 +76,8 @@ func randomG1Element() *e.G1 {
     return element
 }
 
-// newRandomInt generates a random integer for testing purposes.
-func randomScalar() (e.Scalar, error) {
+// RandomScalar generates a random integer for testing purposes.
+func RandomScalar() (e.Scalar, error) {
     order := new(big.Int).SetBytes(e.Order())
     randomInt, err := rand.Int(rand.Reader, order)
     if err != nil {
@@ -88,8 +88,8 @@ func randomScalar() (e.Scalar, error) {
     return scalar, nil
 }
 
-// testableOpen is a helper function that wraps the Open function for testing.
-func testableOpen(publicKey models.PublicKey, secretManagerKey models.SecretManagerKey, M string, signature models.Signature, users []models.User, mockRecoverUserPrivateKey func(models.SecretManagerKey, models.Signature) *e.G1) (int, error) {
+// TestableOpen is a helper function that wraps the Open function for testing.
+func TestableOpen(publicKey models.PublicKey, secretManagerKey models.SecretManagerKey, m string, signature models.Signature, users []models.User, mockRecoverUserPrivateKey func(models.SecretManagerKey, models.Signature) *e.G1) (int, error) {
     // Simulate signature verification (always return true for testing purposes)
     isValid := true
     if !isValid {

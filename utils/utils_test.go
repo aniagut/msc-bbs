@@ -2,7 +2,7 @@ package utils
 
 import (
     "testing"
-	"math/big"
+    "math/big"
 
     "github.com/stretchr/testify/assert"
 )
@@ -18,11 +18,11 @@ func TestRandomScalar(t *testing.T) {
     // Assert the scalar is not zero
     assert.False(t, scalar.IsZero() == 1, "RandomScalar should not generate a zero scalar")
 
-	// Serialize the scalar to bytes
+    // Serialize the scalar to bytes
     scalarBytes, err := scalar.MarshalBinary()
     assert.NoError(t, err, "Scalar.MarshalBinary should not return an error")
 
-	// Assert the scalar is less than the curve order
+    // Assert the scalar is less than the curve order
     order := OrderAsBigInt()
     scalarBigInt := new(big.Int).SetBytes(scalarBytes)
     assert.True(t, scalarBigInt.Cmp(order) < 0, "RandomScalar should be less than the curve order")

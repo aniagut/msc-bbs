@@ -1,10 +1,10 @@
 package experiments
 
 import (
-	"fmt"
+    "fmt"
     "os"
-	"time"
-	"github.com/aniagut/msc-bbs/keygen"
+    "time"
+    "github.com/aniagut/msc-bbs/keygen"
     "github.com/aniagut/msc-bbs/utils"
     e "github.com/cloudflare/circl/ecc/bls12381"
 )
@@ -28,7 +28,7 @@ func MeasureKeyGenTime() {
     }
 
     // Define the number of users to test
-    userCounts := []int{10, 20, 50, 100, 500, 1000, 2000, 5000, 10000,}
+    userCounts := []int{10, 20, 50, 100, 500, 1000, 2000, 5000, 10000}
 
     // Iterate over each user count
     for _, userCount := range userCounts {
@@ -73,7 +73,7 @@ func MeasureSDHTuplesGenerationTimeByNumberOfUsers() {
         return
     }
     defer file.Close()
-    
+
     // Write the header to the file
     _, err = file.WriteString("UserCount,AverageSDHTuplesGenerationTime\n")
     if err != nil {

@@ -29,27 +29,27 @@ func TestVerify(t *testing.T) {
             scalar.SetUint64(12345)
             return scalar
         }(),
-        S_alpha: func() *e.Scalar {
+        SAlpha: func() *e.Scalar {
             scalar := new(e.Scalar)
             scalar.SetUint64(1)
             return scalar
         }(),
-        S_beta: func() *e.Scalar {
+        SBeta: func() *e.Scalar {
             scalar := new(e.Scalar)
             scalar.SetUint64(2)
             return scalar
         }(),
-        S_x: func() *e.Scalar {
+        SX: func() *e.Scalar {
             scalar := new(e.Scalar)
             scalar.SetUint64(3)
             return scalar
         }(),
-        S_delta1: func() *e.Scalar {
+        SDelta1: func() *e.Scalar {
             scalar := new(e.Scalar)
             scalar.SetUint64(4)
             return scalar
         }(),
-        S_delta2: func() *e.Scalar {
+        SDelta2: func() *e.Scalar {
             scalar := new(e.Scalar)
             scalar.SetUint64(5)
             return scalar
@@ -72,8 +72,8 @@ func TestVerify(t *testing.T) {
 // TestComputeR1 tests the computeR1 function.
 func TestComputeR1(t *testing.T) {
     // Mock inputs
-    S_alpha := new(e.Scalar)
-    S_alpha.SetUint64(10)
+    SAlpha := new(e.Scalar)
+    SAlpha.SetUint64(10)
 
     u := e.G1Generator()
 
@@ -83,7 +83,7 @@ func TestComputeR1(t *testing.T) {
     T1 := e.G1Generator()
 
     // Call computeR1
-    R1 := computeR1(S_alpha, u, C, T1)
+    R1 := computeR1(SAlpha, u, C, T1)
 
     // Assert R1 is not nil
     assert.NotNil(t, R1, "R1 should not be nil")
@@ -92,8 +92,8 @@ func TestComputeR1(t *testing.T) {
 // TestComputeR2 tests the computeR2 function.
 func TestComputeR2(t *testing.T) {
     // Mock inputs
-    S_beta := new(e.Scalar)
-    S_beta.SetUint64(20)
+    SBeta := new(e.Scalar)
+    SBeta.SetUint64(20)
 
     v := e.G1Generator()
 
@@ -103,7 +103,7 @@ func TestComputeR2(t *testing.T) {
     T2 := e.G1Generator()
 
     // Call computeR2
-    R2 := computeR2(S_beta, v, C, T2)
+    R2 := computeR2(SBeta, v, C, T2)
 
     // Assert R2 is not nil
     assert.NotNil(t, R2, "R2 should not be nil")
@@ -116,29 +116,29 @@ func TestComputeR3(t *testing.T) {
     g1 := e.G1Generator()
     g2 := e.G2Generator()
 
-    S_x := new(e.Scalar)
-    S_x.SetUint64(30)
+    SX := new(e.Scalar)
+    SX.SetUint64(30)
 
     h := e.G1Generator()
     w := e.G2Generator()
 
-    S_alpha := new(e.Scalar)
-    S_alpha.SetUint64(10)
+    SAlpha := new(e.Scalar)
+    SAlpha.SetUint64(10)
 
-    S_beta := new(e.Scalar)
-    S_beta.SetUint64(20)
+    SBeta := new(e.Scalar)
+    SBeta.SetUint64(20)
 
-    S_delta1 := new(e.Scalar)
-    S_delta1.SetUint64(15)
+    SDelta1 := new(e.Scalar)
+    SDelta1.SetUint64(15)
 
-    S_delta2 := new(e.Scalar)
-    S_delta2.SetUint64(25)
+    SDelta2 := new(e.Scalar)
+    SDelta2.SetUint64(25)
 
     C := *new(e.Scalar)
     C.SetUint64(5)
 
     // Call computeR3
-    R3 := computeR3(T3, g1, g2, S_x, h, w, S_alpha, S_beta, S_delta1, S_delta2, C)
+    R3 := computeR3(T3, g1, g2, SX, h, w, SAlpha, SBeta, SDelta1, SDelta2, C)
 
     // Assert R3 is not nil
     assert.NotNil(t, R3, "R3 should not be nil")
@@ -147,17 +147,17 @@ func TestComputeR3(t *testing.T) {
 // TestComputeR4 tests the computeR4 function.
 func TestComputeR4(t *testing.T) {
     // Mock inputs
-    S_x := new(e.Scalar)
-    S_x.SetUint64(30)
+    SX := new(e.Scalar)
+    SX.SetUint64(30)
 
     T1 := e.G1Generator()
     u := e.G1Generator()
 
-    S_delta1 := new(e.Scalar)
-    S_delta1.SetUint64(15)
+    SDelta1 := new(e.Scalar)
+    SDelta1.SetUint64(15)
 
     // Call computeR4
-    R4 := computeR4(S_x, T1, u, S_delta1)
+    R4 := computeR4(SX, T1, u, SDelta1)
 
     // Assert R4 is not nil
     assert.NotNil(t, R4, "R4 should not be nil")
@@ -166,17 +166,17 @@ func TestComputeR4(t *testing.T) {
 // TestComputeR5 tests the computeR5 function.
 func TestComputeR5(t *testing.T) {
     // Mock inputs
-    S_x := new(e.Scalar)
-    S_x.SetUint64(30)
+    SX := new(e.Scalar)
+    SX.SetUint64(30)
 
     T2 := e.G1Generator()
     v := e.G1Generator()
 
-    S_delta2 := new(e.Scalar)
-    S_delta2.SetUint64(25)
+    SDelta2 := new(e.Scalar)
+    SDelta2.SetUint64(25)
 
     // Call computeR5
-    R5 := computeR5(S_x, T2, v, S_delta2)
+    R5 := computeR5(SX, T2, v, SDelta2)
 
     // Assert R5 is not nil
     assert.NotNil(t, R5, "R5 should not be nil")

@@ -1,19 +1,19 @@
 // Package utils provides utility functions for cryptographic operations
-// // in the BBS signature scheme. It includes functions for generating random scalars,
-// // hashing to scalars, and serializing elements of the elliptic curve groups.
-// // The package uses the BLS12-381 elliptic curve for cryptographic operations.
+// in the BBS signature scheme. It includes functions for generating random scalars,
+// hashing to scalars, and serializing elements of the elliptic curve groups.
+// The package uses the BLS12-381 elliptic curve for cryptographic operations.
 package utils
 
 import (
     "crypto/rand"
     "math/big"
-	"crypto/sha256"
+    "crypto/sha256"
     "errors"
 
     e "github.com/cloudflare/circl/ecc/bls12381"
 )
 
-// RandomScalar generates a random scalar in Z_p* (the field of scalars modulo the curve order).
+// RandomScalar generates a random scalar in Zp* (the field of scalars modulo the curve order).
 func RandomScalar() (e.Scalar, error) {
     order := OrderAsBigInt()
     bigIntScalar, err := rand.Int(rand.Reader, order)
@@ -50,7 +50,7 @@ func OrderAsBigInt() *big.Int {
     return new(big.Int).SetBytes(e.Order())
 }
 
-// HashToScalar hashes a series of byte slices into a scalar in Z_p*.
+// HashToScalar hashes a series of byte slices into a scalar in Zp*.
 func HashToScalar(inputs ...[]byte) (e.Scalar, error) {
     hash := sha256.New()
 
@@ -67,24 +67,24 @@ func HashToScalar(inputs ...[]byte) (e.Scalar, error) {
     var scalar e.Scalar
     order := new(big.Int).SetBytes(e.Order())
     bigIntScalar := new(big.Int).SetBytes(digest)
-    bigIntScalar.Mod(bigIntScalar, order) // Ensure it is in Z_p
+    bigIntScalar.Mod(bigIntScalar, order) // Ensure it is in Zp
     scalar.SetBytes(bigIntScalar.Bytes())
-    
+
     return scalar, nil
 }
 
-// Serialize G1 element to bytes
+// SerializeG1 serializes a G1 element to bytes.
 func SerializeG1(g *e.G1) []byte {
     return g.Bytes()
 }
 
-// Serialize Gt element to bytes
+// SerializeGt serializes a Gt element to bytes.
 func SerializeGt(g *e.Gt) []byte {
-	data, _ := g.MarshalBinary()
-	return data
+    data, _ := g.MarshalBinary()
+    return data
 }
 
-// Serialize string to bytes
+// SerializeString serializes a string to bytes.
 func SerializeString(s string) []byte {
-	return []byte(s)
+    return []byte(s)
 }
