@@ -3,7 +3,7 @@ module github.com/aniagut/msc-bbs
 go 1.18
 
 require (
-	github.com/cloudflare/circl v1.6.0
+	github.com/cloudflare/circl v1.6.2-0.20250604230827-acaa79c563ce
 	github.com/stretchr/testify v1.10.0
 )
 

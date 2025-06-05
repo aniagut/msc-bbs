@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	// "github.com/aniagut/msc-bbs/experiments"
 	"github.com/aniagut/msc-bbs/keygen"
 	"github.com/aniagut/msc-bbs/sign"
 	"github.com/aniagut/msc-bbs/verify"
@@ -11,7 +10,6 @@ import (
 
 
 func main() {
-	// experiments.MeasurePairingMethods()
 	result, err := keygen.KeyGen(5)
 
 	if err != nil {

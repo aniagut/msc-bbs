@@ -11,7 +11,7 @@ import (
 // Experiments to compare multiplying pairings using Mul and ProdPar
 
 func MeasurePairingMethods() {
-    file, _ := os.Create("experiments/results/compute_r3_compare.txt")
+    file, _ := os.Create("experiments/results/compute_r3_compare_new_v.txt")
     defer file.Close()
     file.WriteString("Pairs,AvgProdPair,AvgManualMul\n")
 
